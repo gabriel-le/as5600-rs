@@ -180,12 +180,12 @@ where
     /// The address is automatically shifted left by 1 bit before writing to the device.
     #[cfg(feature = "as5600l")]
     pub fn set_address(&mut self, address: u8) -> Result<(), Error<E>> {
-        // Skip reserved I2C addresses (same validation as C implementation)
+        // Skip reserved I2C addresses
         if address < 8 || address > 119 {
             return Err(Error::InvalidAddress);
         }
 
-        // Note: address needs to be shifted 1 bit (same as C implementation)
+        // Note: address needs to be shifted 1 bit
         let shifted_address = address << 1;
         self.bus
             .write(
@@ -205,6 +205,7 @@ where
     /// This function is only available for AS5600L devices.
     #[cfg(feature = "as5600l")]
     pub fn persist_address(&mut self) -> Result<(), Error<E>> {
+        self.write_u16(Register::I2CAddress, self.address << 1)?;
         self.bus
             .write(self.address, &[Register::Burn.into(), 0x40])
             .map_err(Error::Communication)?;
